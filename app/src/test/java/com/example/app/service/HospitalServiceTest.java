@@ -2,6 +2,8 @@ package com.example.app.service;
 
 import com.example.app.client.HospitalApiClient;
 import com.example.app.model.Admission;
+import com.example.app.model.Allocation;
+import com.example.app.model.Employee;
 import com.example.app.model.RoomAllocation;
 import org.junit.jupiter.api.Test;
 
@@ -10,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class HospitalServiceTest {
 
@@ -46,6 +49,16 @@ class HospitalServiceTest {
 
             return List.of(room1, room2, duplicateRoom, otherPatientRoom);
         }
+
+        @Override
+        public List<Allocation> getAllocations() {
+            return List.of();
+        }
+
+        @Override
+        public List<Employee> getEmployees() {
+            return List.of();
+        }
     }
 
     @Test
@@ -73,6 +86,16 @@ class HospitalServiceTest {
             @Override
             public List<RoomAllocation> getRoomAllocations() {
                 return List.of(); // no rooms
+            }
+
+            @Override
+            public List<Allocation> getAllocations() {
+                return List.of();
+            }
+
+            @Override
+            public List<Employee> getEmployees() {
+                return List.of();
             }
         };
 
@@ -114,6 +137,16 @@ class HospitalServiceTest {
                         new RoomAllocation(3, 102, 5, old, null)
                 );
             }
+
+            @Override
+            public List<Allocation> getAllocations() {
+                return List.of();
+            }
+
+            @Override
+            public List<Employee> getEmployees() {
+                return List.of();
+            }
         };
 
         HospitalService service = new HospitalService(fakeClient);
@@ -146,6 +179,16 @@ class HospitalServiceTest {
                         new RoomAllocation(1, 100, 5, old, null)
                 );
             }
+
+            @Override
+            public List<Allocation> getAllocations() {
+                return List.of();
+            }
+
+            @Override
+            public List<Employee> getEmployees() {
+                return List.of();
+            }
         };
 
         HospitalService service = new HospitalService(fakeClient);
@@ -174,6 +217,16 @@ class HospitalServiceTest {
                         new RoomAllocation(3, 102, 2, "2026-04-03T10:00:00", null)
                 );
             }
+
+            @Override
+            public List<Allocation> getAllocations() {
+                return List.of();
+            }
+
+            @Override
+            public List<Employee> getEmployees() {
+                return List.of();
+            }
         };
 
         HospitalService service = new HospitalService(fakeClient);
@@ -198,6 +251,16 @@ class HospitalServiceTest {
             public List<RoomAllocation> getRoomAllocations() {
                 return List.of();
             }
+
+            @Override
+            public List<Allocation> getAllocations() {
+                return List.of();
+            }
+
+            @Override
+            public List<Employee> getEmployees() {
+                return List.of();
+            }
         };
 
         HospitalService service = new HospitalService(fakeClient);
@@ -206,6 +269,51 @@ class HospitalServiceTest {
         Integer result = service.getLeastUsedRoom();
 
         // Assert
-        assertEquals(null, result);
+        assertNull(result);
+    }
+
+    @Test
+    void getStaffResponsibleForThreeOrMorePatientsConcurrentlyReturnsMatchingStaff() {
+        // Arrange
+        HospitalApiClient fakeClient = new HospitalApiClient() {
+            @Override
+            public List<Admission> getAdmissions() {
+                return List.of();
+            }
+
+            @Override
+            public List<RoomAllocation> getRoomAllocations() {
+                return List.of();
+            }
+
+            @Override
+            public List<Allocation> getAllocations() {
+                return List.of(
+                        new Allocation(1, 100, 1, 1, "2026-04-01T10:00:00", "2026-04-01T12:00:00"),
+                        new Allocation(2, 101, 1, 2, "2026-04-01T10:30:00", "2026-04-01T12:30:00"),
+                        new Allocation(3, 102, 1, 3, "2026-04-01T11:00:00", "2026-04-01T13:00:00"),
+
+                        new Allocation(4, 103, 2, 1, "2026-04-01T10:00:00", "2026-04-01T11:00:00"),
+                        new Allocation(5, 104, 2, 2, "2026-04-01T12:00:00", "2026-04-01T13:00:00"),
+                        new Allocation(6, 105, 2, 3, "2026-04-01T14:00:00", "2026-04-01T15:00:00")
+                );
+            }
+
+            @Override
+            public List<Employee> getEmployees() {
+                return List.of(
+                        new Employee(1, "Smith", "Anna"),
+                        new Employee(2, "Jones", "Ben")
+                );
+            }
+        };
+
+        HospitalService service = new HospitalService(fakeClient);
+
+        // Act
+        List<Integer> result = service.getStaffResponsibleForThreeOrMorePatientsConcurrently();
+
+        // Assert
+        assertEquals(List.of(1), result);
     }
 }

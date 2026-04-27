@@ -11,6 +11,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.example.app.model.Allocation;
+import com.example.app.model.Employee;
+import java.util.ArrayList;
+
 @Service
 public class HospitalService {
 
@@ -74,5 +78,50 @@ public class HospitalService {
                 .min(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
                 .orElse(null);
+    }
+
+    public List<Integer> getStaffResponsibleForThreeOrMorePatientsConcurrently() {
+        List<Integer> result = new ArrayList<>();
+
+        for (Employee employee : hospitalApiClient.getEmployees()) {
+            List<Allocation> employeeAllocations = hospitalApiClient.getAllocations()
+                    .stream()
+                    .filter(allocation -> allocation.getEmployeeID() == employee.getId())
+                    .toList();
+
+            boolean hasThreeConcurrentPatients = employeeAllocations
+                    .stream()
+                    .anyMatch(current -> countOverlappingAllocations(current, employeeAllocations) >= 3);
+
+            if (hasThreeConcurrentPatients) {
+                result.add(employee.getId());
+            }
+        }
+
+        return result;
+    }
+
+    private int countOverlappingAllocations(Allocation current, List<Allocation> allocations) {
+        return (int) allocations.stream()
+                .filter(other -> allocationsOverlap(current, other))
+                .count();
+    }
+
+    private boolean allocationsOverlap(Allocation a, Allocation b) {
+        LocalDateTime aStart = LocalDateTime.parse(a.getStartTime());
+        LocalDateTime aEnd = parseEndTimeOrNow(a.getEndTime());
+
+        LocalDateTime bStart = LocalDateTime.parse(b.getStartTime());
+        LocalDateTime bEnd = parseEndTimeOrNow(b.getEndTime());
+
+        return !aStart.isAfter(bEnd) && !bStart.isAfter(aEnd);
+    }
+
+    private LocalDateTime parseEndTimeOrNow(String endTime) {
+        if (endTime == null || endTime.isBlank()) {
+            return LocalDateTime.now();
+        }
+
+        return LocalDateTime.parse(endTime);
     }
 }
