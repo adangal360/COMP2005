@@ -59,4 +59,16 @@ class HospitalControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("2"));
     }
+
+    @Test
+    void getStaffResponsibleForThreeOrMorePatientsConcurrentlyReturnsStaffAsJson() throws Exception {
+        // Arrange
+        when(hospitalService.getStaffResponsibleForThreeOrMorePatientsConcurrently())
+                .thenReturn(List.of(1));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/f4"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[1]"));
+    }
 }
