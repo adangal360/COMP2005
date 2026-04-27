@@ -45,4 +45,41 @@ class HospitalServiceTest {
             return List.of(room1, room2, duplicateRoom, otherPatientRoom);
         }
     }
+
+    @Test
+    void returnsEmptyListWhenPatientHasNoAdmissions() {
+        // Arrange
+        HospitalApiClient fakeClient = new FakeHospitalApiClient();
+        HospitalService service = new HospitalService(fakeClient);
+
+        // Act
+        List<Integer> result = service.getRoomsUsedByPatient(999);
+
+        // Assert
+        assertEquals(List.of(), result);
+    }
+
+    @Test
+    void returnsEmptyListWhenNoRoomAllocationsMatch() {
+        // Arrange
+        HospitalApiClient fakeClient = new HospitalApiClient() {
+            @Override
+            public List<Admission> getAdmissions() {
+                return List.of(new Admission(200, "2026-04-01", null, 10));
+            }
+
+            @Override
+            public List<RoomAllocation> getRoomAllocations() {
+                return List.of(); // no rooms
+            }
+        };
+
+        HospitalService service = new HospitalService(fakeClient);
+
+        // Act
+        List<Integer> result = service.getRoomsUsedByPatient(10);
+
+        // Assert
+        assertEquals(List.of(), result);
+    }
 }
