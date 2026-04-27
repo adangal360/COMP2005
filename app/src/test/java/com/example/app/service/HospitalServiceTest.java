@@ -1,0 +1,48 @@
+package com.example.app.service;
+
+import com.example.app.client.HospitalApiClient;
+import com.example.app.model.Admission;
+import com.example.app.model.RoomAllocation;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class HospitalServiceTest {
+
+    @Test
+    void getRoomsUsedByPatientReturnsDistinctRooms() {
+        // Arrange
+        HospitalApiClient fakeClient = new FakeHospitalApiClient();
+        HospitalService service = new HospitalService(fakeClient);
+
+        // Act
+        List<Integer> actualRooms = service.getRoomsUsedByPatient(10);
+
+        // Assert
+        assertEquals(List.of(1, 2), actualRooms);
+    }
+
+    private static class FakeHospitalApiClient implements HospitalApiClient {
+
+        @Override
+        public List<Admission> getAdmissions() {
+            Admission admission1 = new Admission(100, "2026-04-01", null, 10);
+            Admission admission2 = new Admission(101, "2026-04-02", null, 10);
+            Admission admission3 = new Admission(102, "2026-04-03", null, 99);
+
+            return List.of(admission1, admission2, admission3);
+        }
+
+        @Override
+        public List<RoomAllocation> getRoomAllocations() {
+            RoomAllocation room1 = new RoomAllocation(1, 100, 1, "2026-04-01T10:00:00", null);
+            RoomAllocation room2 = new RoomAllocation(2, 101, 2, "2026-04-02T10:00:00", null);
+            RoomAllocation duplicateRoom = new RoomAllocation(3, 101, 2, "2026-04-02T12:00:00", null);
+            RoomAllocation otherPatientRoom = new RoomAllocation(4, 102, 9, "2026-04-03T10:00:00", null);
+
+            return List.of(room1, room2, duplicateRoom, otherPatientRoom);
+        }
+    }
+}
