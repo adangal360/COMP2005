@@ -47,4 +47,16 @@ class HospitalControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json("[10,20]"));
     }
+
+    @Test
+    void getLeastUsedRoomReturnsRoomAsJson() throws Exception {
+        // Arrange
+        when(hospitalService.getLeastUsedRoom())
+                .thenReturn(2);
+
+        // Act + Assert
+        mockMvc.perform(get("/api/f3"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("2"));
+    }
 }
