@@ -29,4 +29,9 @@ public class HospitalController {
     public Integer getLeastUsedRoom() {
         return hospitalService.getLeastUsedRoom();
     }
+
+    @GetMapping("/f4")
+    public List<Integer> getStaffResponsibleForThreeOrMorePatientsConcurrently() {
+        return hospitalService.getStaffResponsibleForThreeOrMorePatientsConcurrently();
+    }
 }
