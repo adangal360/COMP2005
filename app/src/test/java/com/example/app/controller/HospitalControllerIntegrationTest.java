@@ -11,6 +11,10 @@ import com.example.app.service.HospitalService;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.List;
+
+import static org.mockito.Mockito.when;
+
 @WebMvcTest(HospitalController.class)
 class HospitalControllerIntegrationTest {
 
@@ -21,8 +25,14 @@ class HospitalControllerIntegrationTest {
     private HospitalService hospitalService;
 
     @Test
-    void getRoomsUsedByPatientEndpointReturnsOk() throws Exception {
+    void getRoomsUsedByPatientEndpointReturnsRoomsAsJson() throws Exception {
+        // Arrange
+        when(hospitalService.getRoomsUsedByPatient(10))
+                .thenReturn(List.of(1, 2));
+
+        // Act + Assert
         mockMvc.perform(get("/api/f1/10"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().json("[1,2]"));
     }
 }
