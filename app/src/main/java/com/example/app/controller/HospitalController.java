@@ -19,4 +19,9 @@ public class HospitalController {
     public List<Integer> getRoomsUsedByPatient(@PathVariable int patientId) {
         return hospitalService.getRoomsUsedByPatient(patientId);
     }
+
+    @GetMapping("/f2/{roomId}")
+    public List<Integer> getPatientsInRoomLast7Days(@PathVariable int roomId) {
+        return hospitalService.getPatientsInRoomLast7Days(roomId);
+    }
 }
