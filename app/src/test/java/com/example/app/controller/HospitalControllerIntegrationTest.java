@@ -35,4 +35,16 @@ class HospitalControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json("[1,2]"));
     }
+
+    @Test
+    void getPatientsInRoomLast7DaysReturnsPatientsAsJson() throws Exception {
+        // Arrange
+        when(hospitalService.getPatientsInRoomLast7Days(5))
+                .thenReturn(List.of(10, 20));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/f2/5"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[10,20]"));
+    }
 }
