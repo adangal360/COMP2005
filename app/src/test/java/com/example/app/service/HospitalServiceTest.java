@@ -156,4 +156,56 @@ class HospitalServiceTest {
         // Assert
         assertEquals(List.of(), result);
     }
+
+    @Test
+    void getLeastUsedRoomReturnsRoomWithLowestUsageCount() {
+        // Arrange
+        HospitalApiClient fakeClient = new HospitalApiClient() {
+            @Override
+            public List<Admission> getAdmissions() {
+                return List.of();
+            }
+
+            @Override
+            public List<RoomAllocation> getRoomAllocations() {
+                return List.of(
+                        new RoomAllocation(1, 100, 1, "2026-04-01T10:00:00", null),
+                        new RoomAllocation(2, 101, 1, "2026-04-02T10:00:00", null),
+                        new RoomAllocation(3, 102, 2, "2026-04-03T10:00:00", null)
+                );
+            }
+        };
+
+        HospitalService service = new HospitalService(fakeClient);
+
+        // Act
+        Integer result = service.getLeastUsedRoom();
+
+        // Assert
+        assertEquals(2, result);
+    }
+
+    @Test
+    void getLeastUsedRoomReturnsNullWhenNoRoomAllocationsExist() {
+        // Arrange
+        HospitalApiClient fakeClient = new HospitalApiClient() {
+            @Override
+            public List<Admission> getAdmissions() {
+                return List.of();
+            }
+
+            @Override
+            public List<RoomAllocation> getRoomAllocations() {
+                return List.of();
+            }
+        };
+
+        HospitalService service = new HospitalService(fakeClient);
+
+        // Act
+        Integer result = service.getLeastUsedRoom();
+
+        // Assert
+        assertEquals(null, result);
+    }
 }

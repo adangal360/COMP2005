@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class HospitalService {
@@ -58,5 +60,19 @@ public class HospitalService {
                 .map(Admission::getPatientID)
                 .distinct()
                 .toList();
+    }
+
+    public Integer getLeastUsedRoom() {
+        return hospitalApiClient.getRoomAllocations()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        RoomAllocation::getRoomID,
+                        Collectors.counting()
+                ))
+                .entrySet()
+                .stream()
+                .min(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
     }
 }
