@@ -6,6 +6,8 @@ import com.example.app.model.RoomAllocation;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -78,6 +80,78 @@ class HospitalServiceTest {
 
         // Act
         List<Integer> result = service.getRoomsUsedByPatient(10);
+
+        // Assert
+        assertEquals(List.of(), result);
+    }
+
+    @Test
+    void getPatientsInRoomLast7DaysReturnsMatchingPatients() {
+        // Arrange
+        HospitalApiClient fakeClient = new HospitalApiClient() {
+            @Override
+            public List<Admission> getAdmissions() {
+                return List.of(
+                        new Admission(100, "2026-04-01", null, 10),
+                        new Admission(101, "2026-04-02", null, 20),
+                        new Admission(102, "2026-04-03", null, 30)
+                );
+            }
+
+            @Override
+            public List<RoomAllocation> getRoomAllocations() {
+                String recent = LocalDateTime.now()
+                        .minusDays(2)
+                        .format(DateTimeFormatter.ISO_DATE_TIME);
+
+                String old = LocalDateTime.now()
+                        .minusDays(10)
+                        .format(DateTimeFormatter.ISO_DATE_TIME);
+
+                return List.of(
+                        new RoomAllocation(1, 100, 5, recent, null),
+                        new RoomAllocation(2, 101, 5, recent, null),
+                        new RoomAllocation(3, 102, 5, old, null)
+                );
+            }
+        };
+
+        HospitalService service = new HospitalService(fakeClient);
+
+        // Act
+        List<Integer> result = service.getPatientsInRoomLast7Days(5);
+
+        // Assert
+        assertEquals(List.of(10, 20), result);
+    }
+
+    @Test
+    void getPatientsInRoomLast7DaysReturnsEmptyListWhenNoRecentRoomAllocations() {
+        // Arrange
+        HospitalApiClient fakeClient = new HospitalApiClient() {
+            @Override
+            public List<Admission> getAdmissions() {
+                return List.of(
+                        new Admission(100, "2026-04-01", null, 10)
+                );
+            }
+
+            @Override
+            public List<RoomAllocation> getRoomAllocations() {
+                String old = LocalDateTime.now()
+                        .minusDays(10)
+                        .format(DateTimeFormatter.ISO_DATE_TIME);
+
+                return List.of(
+                        new RoomAllocation(1, 100, 5, old, null)
+                );
+            }
+        };
+
+        HospitalService service = new HospitalService(fakeClient);
+
+        // Act
+        List<Integer> result = service.getPatientsInRoomLast7Days(5);
 
         // Assert
         assertEquals(List.of(), result);
