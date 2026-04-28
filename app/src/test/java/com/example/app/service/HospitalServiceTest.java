@@ -316,4 +316,42 @@ class HospitalServiceTest {
         // Assert
         assertEquals(List.of(1), result);
     }
+
+    @Test
+    void getStaffResponsibleForThreeOrMorePatientsConcurrentlyCountsTouchingTimeBoundaries() {
+        // Arrange
+        HospitalApiClient fakeClient = new HospitalApiClient() {
+            @Override
+            public List<Admission> getAdmissions() {
+                return List.of();
+            }
+
+            @Override
+            public List<RoomAllocation> getRoomAllocations() {
+                return List.of();
+            }
+
+            @Override
+            public List<Allocation> getAllocations() {
+                return List.of(
+                        new Allocation(1, 100, 1, 1, "2026-04-01T10:00:00", "2026-04-01T11:00:00"),
+                        new Allocation(2, 101, 1, 2, "2026-04-01T11:00:00", "2026-04-01T12:00:00"),
+                        new Allocation(3, 102, 1, 3, "2026-04-01T11:00:00", "2026-04-01T13:00:00")
+                );
+            }
+
+            @Override
+            public List<Employee> getEmployees() {
+                return List.of(new Employee(1, "Boundary", "Test"));
+            }
+        };
+
+        HospitalService service = new HospitalService(fakeClient);
+
+        // Act
+        List<Integer> result = service.getStaffResponsibleForThreeOrMorePatientsConcurrently();
+
+        // Assert
+        assertEquals(List.of(1), result);
+    }
 }
